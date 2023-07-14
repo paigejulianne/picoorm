@@ -7,12 +7,12 @@
     "lightweight"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/paigejulianne14/picoorm",
+  "homepage": "https://github.com/paigejulianne/picoorm",
   "authors": [
     {
       "name": "Paige Julianne Sullivan",
       "email": "paige@paigejulianne.com",
-      "homepage": "https://paigejulianne.com/picoorm"
+      "homepage": "https://paigejulianne.com/"
     }
   ],
   "require": {
