@@ -1,0 +1,26 @@
+{
+  "name": "paigejulianne14/picoorm",
+  "type": "library",
+  "description": "PicoORM: a very lightweight ORM",
+  "keywords": [
+    "orm",
+    "lightweight"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/paigejulianne14/picoorm",
+  "authors": [
+    {
+      "name": "Paige Julianne Sullivan",
+      "email": "paige@paigejulianne.com",
+      "homepage": "https://paigejulianne.com/picoorm"
+    }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "autoload": {
+    "psr-0": {
+      "PicoORM": "src/"
+    }
+  }
+}
