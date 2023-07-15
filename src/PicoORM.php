@@ -3,7 +3,8 @@
  * Package PicoORM
  *
  * @author  Paige Julianne Sullivan <paige@paigejulianne.com>
- * @license MIT
+ * @license GPL-3.0-or-later
+ * @link https://github.com/paigejulianne/picoorm
  */
 
 class PicoORM {
