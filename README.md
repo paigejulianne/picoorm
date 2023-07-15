@@ -4,18 +4,29 @@ PicoORM: a very lightweight ORM for PHP >=7.1
 
 by Paige Julianne Sullivan <paige@paigejulianne.com> https://paigejulianne.com
 
+---
+
 ## Background
 
 Back in 2010, I was building a hosted VOIP PBX that required a LOT of calls to the database.  I wanted to make
 it as simple as I could without having to import a huge ORM (you know which ones I'm talking about).  I wrote this
 code and have been making continual enhancements over the years to it.
 
-## Contributions and Suggestions Welcome!
-
-Feel free to email me with your suggestions or fork the code and submit a pull request
+---
 
 
-## Quick Documentation and Usage
+## Contributing, Issues, and Support
+
+I welcome your contributions to the source code.  Feel free to fork the repository and submit pull requests.
+For support and issues, please use the GitHub issue tracker at https://github.com/paigejulianne/picoorm/issues
+
+You may also find additional information on the GitHub discussions page at https://github.com/paigejulianne/picoorm/discussions
+
+Finally, you can check my blog at https://paigejulianne.com/tag/picoorm/ for additional information and tutorials.
+
+---
+
+## Installation
 
 ### Via composer
 
@@ -32,6 +43,11 @@ Download the ***PicoORM.php*** file into your source directory and **include** i
 ~~~
 include_once("PicoORM.php");
 ~~~
+
+---
+
+## Usage
+
 
 ### Setup the PDO Connection
 
