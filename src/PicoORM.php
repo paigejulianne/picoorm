@@ -52,6 +52,20 @@ class PicoORM {
     }
 
     /**
+     * Refreshes the properties of the current object from the database.
+     * The properties are retrieved by executing a SQL query to the database using the _id_column and _id values of the object.
+     * If a result is found, the properties of the current object are updated with the retrieved values.
+     *
+     * @return void
+     */
+    public function refreshProperties() {
+        $result = self::_fetch('SELECT * FROM _DB_ WHERE `' . $this->_id_column . '` = ?', [$this->_id]);
+        if ($result) {
+            $this->properties = $result;
+        }
+    }
+
+    /**
      * destructor
      */
     public function __destruct()
