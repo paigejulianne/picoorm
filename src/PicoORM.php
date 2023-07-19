@@ -35,7 +35,7 @@ class PicoORM {
      * @param mixed $id_value
      * @param string $id_column
      */
-    public function __construct($id_value = false, $id_column = 'id')
+    public function __construct(mixed $id_value = false, string $id_column = 'id')
     {
         if (!$id_value) {
             $this->_id = -1;
@@ -188,7 +188,7 @@ class PicoORM {
 
         $result = self::_fetchAll($sql, $dataArray);
         if ( ! $result) {
-            return FALSE;
+            return false;
         }
 
         if (count($result) == 1) {
@@ -215,7 +215,7 @@ class PicoORM {
      *
      * @return mixed
      */
-    static public function _fetchAll(string $sql, array $valueArray = [], string $database = NULL): mixed
+    static public function _fetchAll(string $sql, array $valueArray = [], string $database = NULL): PDOStatement
     {
         $statement = self::_doQuery($sql, $valueArray, $database);
         if ($statement->rowCount()) {
@@ -229,12 +229,12 @@ class PicoORM {
      * fetch the first matching record from the database
      *
      * @param string $sql PDO ready sql statement
-     * @param string $valueArray values for PDO substitution
+     * @param array $valueArray values for PDO substitution
      * @param string $database technically the table name
      *
-     * @return mixed
+     * @return array
      */
-    static public function _fetch(string $sql, array $valueArray = [], string $database = NULL): mixed
+    static public function _fetch(string $sql, array $valueArray = [], string $database = NULL): array
     {
         $statement = self::_doQuery($sql, $valueArray, $database);
         if ($statement->rowCount()) {
