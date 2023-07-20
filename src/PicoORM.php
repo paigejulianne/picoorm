@@ -66,6 +66,19 @@ class PicoORM {
     }
 
     /**
+     * Check if a record exists in the database based on the given id_value and id_column.
+     *
+     * @param mixed $id_value The value of the id to check.
+     * @param string $id_column The name of the id column to check against. Default is 'id'.
+     * @return bool True if the record exists, false otherwise.
+     */
+    public static function exists($id_value, $id_column = 'id'): bool
+    {
+        $result = self::_fetch('SELECT * FROM _DB_ WHERE `' . $id_column . '` = ?', [$id_value]);
+        return (bool)$result;
+    }
+
+    /**
      * destructor
      */
     public function __destruct()
