@@ -219,7 +219,7 @@ class PicoORM {
 
         $result = self::_fetchAll($sql, $dataArray);
         if ( ! $result) {
-            return false;
+            return [];
         }
 
         if (count($result) == 1) {
@@ -246,13 +246,13 @@ class PicoORM {
      *
      * @return mixed
      */
-    static public function _fetchAll(string $sql, array $valueArray = [], string $database = NULL): PDOStatement
+    static public function _fetchAll(string $sql, array $valueArray = [], string $database = NULL): array
     {
         $statement = self::_doQuery($sql, $valueArray, $database);
         if ($statement->rowCount()) {
             return $statement->fetchAll(PDO::FETCH_BOTH);
         } else {
-            return false;
+            return [];
         }
     }
 
@@ -271,7 +271,7 @@ class PicoORM {
         if ($statement->rowCount()) {
             return $statement->fetch(PDO::FETCH_BOTH);
         } else {
-            return false;
+            return [];
         }
     }
 
