@@ -56,6 +56,7 @@ class PicoORM {
                 $this->properties = $result;
             }
         }
+        $this->_getTableMetadata();
         return $this;
     }
 
