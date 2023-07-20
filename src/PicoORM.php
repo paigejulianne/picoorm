@@ -142,7 +142,7 @@ class PicoORM {
     {
         $columnExists = $this->_doesColumnExist($prop);
         if (!$columnExists) {
-            throw new Exception('Column ' . $prop . ' does not exist in table ' . $this->_id_column);
+            throw new Exception('Column ' . $prop . ' does not exist in table ');
         }
         return $this->properties[$prop];
     }
@@ -157,7 +157,7 @@ class PicoORM {
     {
         $columnExists = $this->_doesColumnExist($prop);
         if (!$columnExists) {
-            throw new Exception('Column ' . $prop . ' does not exist in table ' . $this->_id_column);
+            throw new Exception('Column ' . $prop . ' does not exist in table ');
         }
         if ($prop[0] != '_') {
             $this->_taintedItems[$prop] = $prop;
