@@ -30,6 +30,14 @@ class PicoORM {
     private ?string $_id_column = NULL;
 
     /**
+     * @var array holds the table metadata
+     */
+    private array $_tableMetadata = [];
+
+
+
+
+    /**
      * constructor
      *
      * @param mixed $id_value
@@ -112,6 +120,7 @@ class PicoORM {
                     // do an insert query and then set the new ID
                     $sql = 'INSERT INTO _DB_ SET ' . implode(', ', $parts);
                     self::_doQuery($sql, $values);
+                    // @todo This only work on autoincremented fields
                     $this->_id = $GLOBALS["_PICO_PDO"]->lastInsertId();
                 } else {
                     $values[] = $this->_id;
@@ -131,6 +140,10 @@ class PicoORM {
      */
     public function __get(string $prop): mixed
     {
+        $columnExists = $this->_doesColumnExist($prop);
+        if (!$columnExists) {
+            throw new Exception('Column ' . $prop . ' does not exist in table ' . $this->_id_column);
+        }
         return $this->properties[$prop];
     }
 
@@ -142,6 +155,10 @@ class PicoORM {
      */
     public function __set(string $prop, mixed $value): void
     {
+        $columnExists = $this->_doesColumnExist($prop);
+        if (!$columnExists) {
+            throw new Exception('Column ' . $prop . ' does not exist in table ' . $this->_id_column);
+        }
         if ($prop[0] != '_') {
             $this->_taintedItems[$prop] = $prop;
         }
@@ -296,4 +313,27 @@ class PicoORM {
 
         return $statement;
     }
+
+    public function _getTableMetadata() {
+        $sql = 'DESCRIBE __DB__';
+        $result = self::_fetchAll($sql);
+        $this->_tableMetadata = $result;
+    }
+
+    /**
+     * Check if a specified column exists in the table metadata.
+     *
+     * @param string $column The column name to check.
+     *
+     * @return bool Returns true if the column exists, false otherwise.
+     */
+    public function _doesColumnExist($column) {
+        return in_array($column, $this->_tableMetadata);
+    }
+    
+    
+    
+    
+    
+    
 }
