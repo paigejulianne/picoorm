@@ -317,7 +317,9 @@ class PicoORM {
     public function _getTableMetadata() {
         $sql = 'DESCRIBE __DB__';
         $result = self::_fetchAll($sql);
-        $this->_tableMetadata = $result;
+        foreach($result as $item) {
+            $this->_tableMetadata[] = $item['Field'];
+        }
     }
 
     /**
