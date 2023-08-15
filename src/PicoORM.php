@@ -121,8 +121,8 @@ class PicoORM {
                     // do an insert query and then set the new ID
                     $sql = 'INSERT INTO _DB_ SET ' . implode(', ', $parts);
                     self::_doQuery($sql, $values);
-                    // @todo This only work on autoincremented fields
-                    $this->_id = $GLOBALS["_PICO_PDO"]->lastInsertId();
+                    $this->_id = $this->properties[$this->_id_column];
+                    if ($this->_id == "") $this->_id = $GLOBALS["_PICO_PDO"]->lastInsertId();
                 } else {
                     $values[] = $this->_id;
                     $sql = 'UPDATE _DB_ SET ' . implode(', ', $parts) . ' WHERE `' . $this->_id_column . '` = ?';
