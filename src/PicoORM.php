@@ -215,9 +215,14 @@ class PicoORM {
             $filterString = ' WHERE ' . implode(' ' . $filterGlue . ' ', $filterArray);
         }
 
-        $sql    = 'SELECT ' . $idColumn . ' FROM _DB_' . $filterString;
+        $sql    = 'SELECT ' . $idColumn . ' FROM _DB_' . @$filterString;
 
-        $result = self::_fetchAll($sql, $dataArray);
+        if (!empty($dataArray)) {
+            $result = self::_fetchAll($sql, $dataArray);
+        } else {
+            $result = self::_fetchAll($sql);
+        }
+
         if ( ! $result) {
             return [];
         }
