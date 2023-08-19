@@ -57,7 +57,11 @@ class PicoORM {
                 $this->properties = $result;
             }
         }
+        /* @TODO:  This only seems to work with MySQL/MariaDB
+         * 			Need to figure out how to get this to work with SQLite
+         *
         $this->_getTableMetadata();
+        */
         return $this;
     }
 
@@ -294,7 +298,7 @@ class PicoORM {
     {
         if (@!is_object($GLOBALS['_PICO_PDO'])) {
             // @todo this shouldn't be failing and throwing an exception when the object is destroyed
-            return false;
+            return new PDOStatement();
         }
         if ($database === NULL) {
             $database = strtolower(get_called_class());
