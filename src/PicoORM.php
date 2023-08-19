@@ -2,7 +2,8 @@
 /**
  * Package PicoORM
  *
- * @author  Paige Julianne Sullivan <paige@paigejulianne.com>
+ * @author  Paige Julianne Sullivan <paige@paigejulianne.com> https://paigejulianne.com
+ * @copyright 2008-present Paige Julianne Sullivan
  * @license GPL-3.0-or-later
  * @link https://github.com/paigejulianne/picoorm
  */
@@ -293,7 +294,7 @@ class PicoORM {
     {
         if (@!is_object($GLOBALS['_PICO_PDO'])) {
             // @todo this shouldn't be failing and throwing an exception when the object is destroyed
-            return new PDOStatement();
+            return false;
         }
         if ($database === NULL) {
             $database = strtolower(get_called_class());
