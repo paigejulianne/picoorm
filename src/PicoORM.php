@@ -146,10 +146,12 @@ class PicoORM {
      */
     public function __get(string $prop): mixed
     {
+        /*
         $columnExists = $this->_doesColumnExist($prop);
         if (!$columnExists) {
             throw new Exception('Column ' . $prop . ' does not exist in table ');
         }
+        */
         return $this->properties[$prop];
     }
 
@@ -161,10 +163,12 @@ class PicoORM {
      */
     public function __set(string $prop, mixed $value): void
     {
+        /*
         $columnExists = $this->_doesColumnExist($prop);
         if (!$columnExists) {
             throw new Exception('Column ' . $prop . ' does not exist in table ');
         }
+        */
         if ($prop[0] != '_') {
             $this->_taintedItems[$prop] = $prop;
         }
@@ -325,6 +329,7 @@ class PicoORM {
         return $statement;
     }
 
+    /*
     public function _getTableMetadata() {
         $sql = 'DESCRIBE _DB_';
         $result = self::_fetchAll($sql);
@@ -340,13 +345,10 @@ class PicoORM {
      *
      * @return bool Returns true if the column exists, false otherwise.
      */
+    /*
     public function _doesColumnExist($column) {
         return in_array($column, $this->_tableMetadata);
     }
-    
-    
-    
-    
-    
-    
+    */
+
 }
