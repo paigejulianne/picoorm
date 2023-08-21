@@ -192,7 +192,7 @@ class PicoORM {
      */
     public function delete(): void
     {
-        self::_doQuery('DELETE FROM _DB_ WHERE `' . $this->_id_column . '` = ?', $this->_id);
+        self::_doQuery('DELETE FROM _DB_ WHERE `' . $this->_id_column . '` = ?', [$this->_id]);
     }
 
 
