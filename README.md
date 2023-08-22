@@ -2,7 +2,9 @@
 
 PicoORM: a very lightweight ORM for PHP >=7.1
 
-by Paige Julianne Sullivan <paige@paigejulianne.com> https://paigejulianne.com
+by Paige Julianne Sullivan <paige@paigejulianne.com> 
+
+https://paigejulianne.com
 
 ---
 
@@ -22,7 +24,7 @@ For support and issues, please use the GitHub issue tracker at https://github.co
 
 You may also find additional information on the GitHub discussions page at https://github.com/paigejulianne/picoorm/discussions
 
-Finally, you can check my blog at https://paigejulianne.com/tag/picoorm/ for additional information and tutorials.
+Finally, you can check my blog at https://paigejulianne.com/?s=picoorm for additional information and tutorials.
 
 ---
 
