@@ -1,6 +1,6 @@
 # PicoORM
 
-PicoORM: a very lightweight ORM for PHP >=7.4
+PicoORM: a very lightweight ORM for PHP 8.0+
 
 by Paige Julianne Sullivan <paige@paigejulianne.com> 
 
