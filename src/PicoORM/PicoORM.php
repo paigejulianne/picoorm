@@ -8,12 +8,16 @@
  * @link https://github.com/paigejulianne/picoorm
  */
 
+namespace PicoORM;
+
+use PDO, PDOStatement;
+
 class PicoORM {
 
     /**
      * @var mixed ID of row in database
      */
-    private mixed $_id = 0;
+    private string $_id;
 
     /**
      * @var array holds the columns out of the database table
@@ -26,15 +30,9 @@ class PicoORM {
     private array $_taintedItems = [];
 
     /**
-     * @var string name of ID column in database (usually 'id', but not always)
+     * @var string|int name of ID column in database (usually 'id', but not always)
      */
-    private ?string $_id_column = NULL;
-
-    /**
-     * @var array holds the table metadata
-     */
-    private array $_tableMetadata = [];
-
+    private string|int $_id_column;
 
     /**
      * constructor
@@ -42,7 +40,7 @@ class PicoORM {
      * @param mixed $id_value
      * @param string $id_column
      */
-    public function __construct(mixed $id_value = false, string $id_column = 'id')
+    public function __construct(string $id_value, string $id_column = 'id')
     {
         if (!$id_value) {
             $this->_id = -1;
@@ -55,11 +53,6 @@ class PicoORM {
                 $this->properties = $result;
             }
         }
-        /* @TODO:  This only seems to work with MySQL/MariaDB
-         * 			Need to figure out how to get this to work with SQLite
-         *
-        $this->_getTableMetadata();
-        */
         return $this;
     }
 
@@ -70,7 +63,8 @@ class PicoORM {
      *
      * @return void
      */
-    public function refreshProperties() {
+    public function refreshProperties(): void
+    {
         $result = self::_fetch('SELECT * FROM _DB_ WHERE `' . $this->_id_column . '` = ?', [$this->_id]);
         if ($result) {
             $this->properties = $result;
@@ -80,11 +74,11 @@ class PicoORM {
     /**
      * Check if a record exists in the database based on the given id_value and id_column.
      *
-     * @param mixed $id_value The value of the id to check.
+     * @param int|string $id_value The value of the id to check.
      * @param string $id_column The name of the id column to check against. Default is 'id'.
      * @return bool True if the record exists, false otherwise.
      */
-    public static function exists($id_value, $id_column = 'id'): bool
+    public static function exists(int|string $id_value, string $id_column = 'id'): bool
     {
         $result = self::_fetch('SELECT * FROM _DB_ WHERE `' . $id_column . '` = ?', [$id_value]);
         return (bool)$result;
@@ -111,6 +105,7 @@ class PicoORM {
      */
     public function writeChanges(): void
     {
+        $parts = $values = [];
         if ($this->_taintedItems) {
             foreach ($this->_taintedItems as $propname => $_) {
                 if ($propname[0] == '_') {
@@ -138,35 +133,23 @@ class PicoORM {
     /**
      * gets a property
      *
-     * @param  string  $prop
+     * @param string $prop
      *
-     * @return mixed
+     * @return string|array|int|float|bool|null
      */
-    public function __get(string $prop): mixed
+    public function __get(string $prop): string|array|int|float|bool|null
     {
-        /*
-        $columnExists = $this->_doesColumnExist($prop);
-        if (!$columnExists) {
-            throw new Exception('Column ' . $prop . ' does not exist in table ');
-        }
-        */
         return $this->properties[$prop];
     }
 
     /**
      * sets a property
      *
-     * @param  string  $prop
-     * @param  mixed   $value
+     * @param string $prop
+     * @param string|array|int|float|bool|null $value
      */
-    public function __set(string $prop, mixed $value): void
+    public function __set(string $prop, string|array|int|float|bool|null $value): void
     {
-        /*
-        $columnExists = $this->_doesColumnExist($prop);
-        if (!$columnExists) {
-            throw new Exception('Column ' . $prop . ' does not exist in table ');
-        }
-        */
         if ($prop[0] != '_') {
             $this->_taintedItems[$prop] = $prop;
         }
@@ -205,9 +188,12 @@ class PicoORM {
      * @return array
      */
     static public function getAllObjects(
-        string $idColumn = 'id', array $filters = array(), string $filterGlue = 'AND', mixed $forceArray = false
+        string $idColumn = 'id', array $filters = array(), string $filterGlue = 'AND', bool $forceArray = false
     ): array
     {
+        $filterArray = [];
+        $filterString = '';
+        $returnArray = [];
         $_class = get_called_class();
 
         // this is to build the string that will be used as the expression by PDO
@@ -254,7 +240,7 @@ class PicoORM {
      *
      * @param string $sql PDO ready sql statement
      * @param array $valueArray properties and values for PDO substitution
-     * @param string $database technically the table name
+     * @param string|null $database technically the table name
      *
      * @return mixed
      */
@@ -273,7 +259,7 @@ class PicoORM {
      *
      * @param string $sql PDO ready sql statement
      * @param array $valueArray values for PDO substitution
-     * @param string $database technically the table name
+     * @param string|null $database technically the table name
      *
      * @return array
      */
@@ -290,9 +276,9 @@ class PicoORM {
     /**
      * executes a sql statement and returns a PDO statement
      *
-     * @param  string  $sql         PDO ready sql statement
-     * @param  array   $valueArray  values for PDO substitution
-     * @param  string  $database    technically the table name
+     * @param string $sql PDO ready sql statement
+     * @param array $valueArray values for PDO substitution
+     * @param string|null $database technically the table name
      *
      * @return PDOStatement
      */
@@ -326,27 +312,5 @@ class PicoORM {
 
         return $statement;
     }
-
-    /*
-    public function _getTableMetadata() {
-        $sql = 'DESCRIBE _DB_';
-        $result = self::_fetchAll($sql);
-        foreach($result as $item) {
-            $this->_tableMetadata[] = $item['Field'];
-        }
-    }
-
-    /**
-     * Check if a specified column exists in the table metadata.
-     *
-     * @param string $column The column name to check.
-     *
-     * @return bool Returns true if the column exists, false otherwise.
-     */
-    /*
-    public function _doesColumnExist($column) {
-        return in_array($column, $this->_tableMetadata);
-    }
-    */
 
 }
