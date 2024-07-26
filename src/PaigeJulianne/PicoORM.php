@@ -37,7 +37,7 @@ class PicoORM {
     /**
      * @var string table name
      */
-    static private string $_table;
+    static public string $_table;
 
     /**
      * constructor
