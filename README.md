@@ -62,10 +62,10 @@ $GLOBALS['_PICO_PDO'] = new PDO("mysql:host=hostname;dbname=database_name;","dat
 To begin working with tables, simply extend the **PicoORM** class, naming your class the same as the table name. For example, to work with a table called **users**, you would create a class called **Users** that extends **PicoORM**. 
 (Note: if using MySQL or MariaDB, the class/table name is case-insensitive.  Other databases may be case-sensitive.)
 
-***NOTE:  Since version 1.7-alpha, the namespace for this class is PicoORM\PicoORM***
+***NOTE:  Since version 1.7.1-alpha, the namespace for this class is PaigeJulianne\PicoORM***
 
 ~~~
-use PicoORM;
+use PaigeJulianne\PicoORM;
 class Users extends PicoORM {
     // your code here
 }
@@ -76,7 +76,7 @@ you can do so by adding a prefix to the class name.  For example, if you have a 
 you would create a class called **mydatabase\Users** that extends **PicoORM**.  Example:
 
 ~~~
-use PicoORM;
+use PaigeJulianne\PicoORM;
 class mydatabase\Users extends PicoORM {
     // your code here
 }

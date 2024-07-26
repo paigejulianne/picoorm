@@ -8,7 +8,7 @@
  * @link https://github.com/paigejulianne/picoorm
  */
 
-namespace PicoORM;
+namespace PaigeJulianne;
 
 use PDO, PDOStatement;
 
