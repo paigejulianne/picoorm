@@ -35,13 +35,23 @@ class PicoORM {
     private string|int $_id_column;
 
     /**
+     * @var string table name
+     */
+    static private string $_table;
+
+    /**
      * constructor
      *
-     * @param mixed $id_value
+     * @param string $id_value
      * @param string $id_column
+     * @param null|string $table pass a different table name than the class name
      */
-    public function __construct(string $id_value, string $id_column = 'id')
+    public function __construct(string $id_value, string $id_column = 'id', null|string $table = null)
     {
+        if ($table !== null) {
+            self::$_table = $table;
+        }
+
         if (!$id_value) {
             $this->_id = -1;
             $this->_id_column = $id_column;
@@ -288,8 +298,13 @@ class PicoORM {
             // @todo this shouldn't be failing and throwing an exception when the object is destroyed
             return new PDOStatement();
         }
+
         if ($database === NULL) {
             $database = strtolower(get_called_class());
+        }
+
+        if ($database === NULL) {
+            $database = self::$_table;
         }
 
         @list($database, $table) = explode('\\', $database);
