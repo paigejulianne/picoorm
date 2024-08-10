@@ -109,9 +109,10 @@ class PicoORM
                 if (($this->_id == -1) || ($this->_id_column == NULL)) {
                     // do an insert query and then set the new ID
                     $sql = 'INSERT INTO _DB_ SET ' . implode(', ', $parts);
-                    self::_doQuery($sql, $values);
+                    $statement = self::_doQuery($sql, $values);
+                    if ($this->_id == "") $this->_id = $statement->getLastInsertId();
                     $this->_id = $this->properties[$this->_id_column];
-                    if ($this->_id == "") $this->_id = $GLOBALS["_PICO_PDO"]->lastInsertId();
+
                 } else {
                     $values[] = $this->_id;
                     $sql = 'UPDATE _DB_ SET ' . implode(', ', $parts) . ' WHERE `' . $this->_id_column . '` = ?';
