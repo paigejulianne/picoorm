@@ -30,13 +30,13 @@ class PicoORM
     /**
      * @var string|int name of ID column in database (usually 'id', but not always)
      */
-    private string|int $_id_column;
+    private string $_id_column;
 
     public static int $_lastInsertId;
 
 
 
-    public function __construct(string $id_value, string $id_column = 'id')
+    public function __construct(string|bool $id_value = false, string $id_column = 'id')
     {
         if (!$id_value) {
             $this->_id = -1;
@@ -79,6 +79,10 @@ class PicoORM
         return (bool)$result;
     }
 
+    public function getId(): string|int {
+        return $this->_id;
+    }
+
     /**
      * destructor
      */
@@ -101,28 +105,27 @@ class PicoORM
     public function writeChanges(): void
     {
         $parts = $values = [];
-        if ($this->_taintedItems) {
-            foreach ($this->_taintedItems as $propname => $_) {
-                if ($propname[0] == '_') {
-                    continue;
-                }
-                $parts[] = "$propname = ?";
-                $values[] = $this->properties[$propname];
+        foreach ($this->_taintedItems as $propname => $_) {
+            if ($propname[0] == '_') {
+                continue;
             }
-            if (@$parts || @$values) {
-                if ($this->_id == -1) {
-                    // do an insert query and then set the new ID
-                    $sql = 'INSERT INTO _DB_ SET ' . implode(', ', $parts);
-                    $statement = self::_doQuery($sql, $values);
-                    $this->_id = self::$_lastInsertId;
+            $parts[] = "$propname = ?";
+            $values[] = $this->properties[$propname];
+        }
 
-                } else {
-                    $values[] = $this->_id;
-                    $sql = 'UPDATE _DB_ SET ' . implode(', ', $parts) . ' WHERE `' . $this->_id_column . '` = ?';
-                    self::_doQuery($sql, $values);
-                }
+        if (@$parts && @$values) {
+            if ($this->_id == -1) {
+                // do an insert query and then set the new ID
+                $sql = 'INSERT INTO _DB_ SET ' . implode(', ', $parts);
+                self::_doQuery($sql, $values);
+                $this->_id = self::$_lastInsertId;
+            } else {
+                $values[] = $this->_id;
+                $sql = 'UPDATE _DB_ SET ' . implode(', ', $parts) . ' WHERE `' . $this->_id_column . '` = ?';
+                self::_doQuery($sql, $values);
             }
         }
+        $this->_taintedItems = [];  // we just saved everything, so clear the tainted items array
     }
 
     /**
@@ -300,6 +303,7 @@ class PicoORM
         } else {
             $statement->execute();
         }
+
         self::$_lastInsertId = $conn->lastInsertId();
         return $statement;
     }
