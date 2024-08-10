@@ -281,11 +281,7 @@ class PicoORM
 
         if ($table === NULL) {
             $table = strtolower(static::class);
-        }
-
-        @list($database, $table) = explode('\\', $table);
-        if (@$database) {
-            $table = $database . '.' . $table;
+            @list($database, $table) = explode('\\', $table);
         }
 
         $sql = str_replace('_DB_', $table, $sql);
