@@ -1,18 +1,16 @@
 <?php
+
+namespace PaigeJulianne;
 /**
  * Package PicoORM
  *
- * @author  Paige Julianne Sullivan <paige@paigejulianne.com> https://paigejulianne.com
+ * @author    Paige Julianne Sullivan <paige@paigejulianne.com> https://paigejulianne.com
  * @copyright 2008-present Paige Julianne Sullivan
- * @license GPL-3.0-or-later
- * @link https://github.com/paigejulianne/picoorm
+ * @license   GPL-3.0-or-later
+ * @link      https://github.com/paigejulianne/picoorm
  */
-
-namespace PaigeJulianne;
-
-use PDO, PDOStatement;
-
-class PicoORM {
+class PicoORM
+{
 
     /**
      * @var mixed ID of row in database
@@ -61,8 +59,8 @@ class PicoORM {
 
     /**
      * Refreshes the properties of the current object from the database.
-     * The properties are retrieved by executing a SQL query to the database using the _id_column and _id values of the object.
-     * If a result is found, the properties of the current object are updated with the retrieved values.
+     * The properties are retrieved by executing a SQL query to the database using the _id_column and _id values of the
+     * object. If a result is found, the properties of the current object are updated with the retrieved values.
      *
      * @return void
      */
@@ -77,8 +75,8 @@ class PicoORM {
     /**
      * Check if a record exists in the database based on the given id_value and id_column.
      *
-     * @param int|string $id_value The value of the id to check.
-     * @param string $id_column The name of the id column to check against. Default is 'id'.
+     * @param int|string $id_value  The value of the id to check.
+     * @param string     $id_column The name of the id column to check against. Default is 'id'.
      * @return bool True if the record exists, false otherwise.
      */
     public static function exists(int|string $id_value, string $id_column = 'id'): bool
@@ -148,7 +146,7 @@ class PicoORM {
     /**
      * sets a property
      *
-     * @param string $prop
+     * @param string                           $prop
      * @param string|array|int|float|bool|null $value
      */
     public function __set(string $prop, string|array|int|float|bool|null $value): void
@@ -183,9 +181,9 @@ class PicoORM {
     /**
      * retrieves multiple rows/objects from the database based on parameters
      *
-     * @param string $idColumn
-     * @param array $filters column|op|data
-     * @param string $filterGlue join statement for filters
+     * @param string  $idColumn
+     * @param array   $filters    column|op|data
+     * @param string  $filterGlue join statement for filters
      * @param boolean $forceArray force an array even if only a single result is returned
      *
      * @return array
@@ -211,7 +209,7 @@ class PicoORM {
             $filterString = ' WHERE ' . implode(' ' . $filterGlue . ' ', $filterArray);
         }
 
-        $sql    = 'SELECT ' . $idColumn . ' FROM _DB_' . @$filterString;
+        $sql = 'SELECT ' . $idColumn . ' FROM _DB_' . @$filterString;
 
         if (!empty($dataArray)) {
             $result = self::_fetchAll($sql, $dataArray);
@@ -219,7 +217,7 @@ class PicoORM {
             $result = self::_fetchAll($sql);
         }
 
-        if ( ! $result) {
+        if (!$result) {
             return [];
         }
 
@@ -241,9 +239,9 @@ class PicoORM {
     /**
      * fetch all matching records from the database
      *
-     * @param string $sql PDO ready sql statement
-     * @param array $valueArray properties and values for PDO substitution
-     * @param string|null $database technically the table name
+     * @param string      $sql        PDO ready sql statement
+     * @param array       $valueArray properties and values for PDO substitution
+     * @param string|null $database   technically the table name
      *
      * @return mixed
      */
@@ -260,9 +258,9 @@ class PicoORM {
     /**
      * fetch the first matching record from the database
      *
-     * @param string $sql PDO ready sql statement
-     * @param array $valueArray values for PDO substitution
-     * @param string|null $database technically the table name
+     * @param string      $sql        PDO ready sql statement
+     * @param array       $valueArray values for PDO substitution
+     * @param string|null $database   technically the table name
      *
      * @return array
      */
@@ -279,9 +277,9 @@ class PicoORM {
     /**
      * executes a sql statement and returns a PDO statement
      *
-     * @param string $sql PDO ready sql statement
-     * @param array $valueArray values for PDO substitution
-     * @param string|null $database technically the table name
+     * @param string      $sql        PDO ready sql statement
+     * @param array       $valueArray values for PDO substitution
+     * @param string|null $database   technically the table name
      *
      * @return PDOStatement
      */
@@ -304,12 +302,12 @@ class PicoORM {
             $database .= '.' . $table;
         }
 
-        $sql      = str_replace('_DB_', $database, $sql);
-        $sql      = str_replace('_db_', $database, $sql);
+        $sql = str_replace('_DB_', $database, $sql);
+        $sql = str_replace('_db_', $database, $sql);
 
         $statement = $GLOBALS['_PICO_PDO']->prepare($sql);
         if ($valueArray != NULL) {
-            if ( ! is_array($valueArray)) {
+            if (!is_array($valueArray)) {
                 $valueArray = array($valueArray);
             }
             $statement->execute($valueArray);

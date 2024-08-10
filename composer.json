@@ -21,8 +21,8 @@
     "ext-pdo": "*"
   },
   "autoload": {
-    "psr-0": {
-      "PicoORM": "src/"
-    }
+    "files": [
+      "PicoORM.php"
+    ]
   }
 }
