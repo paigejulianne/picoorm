@@ -32,6 +32,10 @@ class PicoORM
      */
     private string|int $_id_column;
 
+    public static int $_lastInsertId;
+
+
+
     public function __construct(string $id_value, string $id_column = 'id')
     {
         if (!$id_value) {
@@ -106,12 +110,11 @@ class PicoORM
                 $values[] = $this->properties[$propname];
             }
             if (@$parts || @$values) {
-                if (($this->_id == -1) || ($this->_id_column == NULL)) {
+                if ($this->_id == -1) {
                     // do an insert query and then set the new ID
                     $sql = 'INSERT INTO _DB_ SET ' . implode(', ', $parts);
                     $statement = self::_doQuery($sql, $values);
-                    if ($this->_id == "") $this->_id = $statement->getLastInsertId();
-                    $this->_id = $this->properties[$this->_id_column];
+                    $this->_id = self::$_lastInsertId;
 
                 } else {
                     $values[] = $this->_id;
@@ -297,7 +300,7 @@ class PicoORM
         } else {
             $statement->execute();
         }
-
+        self::$_lastInsertId = $conn->lastInsertId();
         return $statement;
     }
 
