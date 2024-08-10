@@ -39,13 +39,7 @@ class PicoORM {
      */
     static public string $_table;
 
-    /**
-     * constructor
-     *
-     * @param string $id_value
-     * @param string $id_column
-     * @param null|string $table pass a different table name than the class name
-     */
+
     public function __construct(string $id_value, string $id_column = 'id', null|string $table = null)
     {
         if ($table !== null) {
@@ -63,7 +57,6 @@ class PicoORM {
                 $this->properties = $result;
             }
         }
-        return $this;
     }
 
     /**
@@ -295,16 +288,15 @@ class PicoORM {
     static public function _doQuery(string $sql, array $valueArray = [], string $database = NULL): PDOStatement
     {
         if (@!is_object($GLOBALS['_PICO_PDO'])) {
-            // @todo this shouldn't be failing and throwing an exception when the object is destroyed
-            return new PDOStatement();
+            throw new \Exception("_PICO_PDO global not set!");
         }
 
-        if ($database === NULL) {
-            $database = strtolower(get_called_class());
-        }
-
-        if ($database === NULL) {
+        if (self::$_table) {
             $database = self::$_table;
+        }
+
+        if ($database === NULL) {
+            $database = strtolower(static::class);
         }
 
         @list($database, $table) = explode('\\', $database);
