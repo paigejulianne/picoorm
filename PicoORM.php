@@ -32,18 +32,8 @@ class PicoORM
      */
     private string|int $_id_column;
 
-    /**
-     * @var string table name
-     */
-    static public string $_table;
-
-
-    public function __construct(string $id_value, string $id_column = 'id', null|string $table = null)
+    public function __construct(string $id_value, string $id_column = 'id')
     {
-        if ($table !== null) {
-            self::$_table = $table;
-        }
-
         if (!$id_value) {
             $this->_id = -1;
             $this->_id_column = $id_column;
@@ -279,31 +269,27 @@ class PicoORM
      *
      * @param string      $sql        PDO ready sql statement
      * @param array       $valueArray values for PDO substitution
-     * @param string|null $database   technically the table name
+     * @param string|null $table      technically the table name
      *
      * @return PDOStatement
      */
-    static public function _doQuery(string $sql, array $valueArray = [], string $database = NULL): PDOStatement
+    static public function _doQuery(string $sql, array $valueArray = [], string $table = NULL): PDOStatement
     {
         if (@!is_object($GLOBALS['_PICO_PDO'])) {
             throw new \Exception("_PICO_PDO global not set!");
         }
 
-        if (self::$_table) {
-            $database = self::$_table;
+        if ($table === NULL) {
+            $table = strtolower(static::class);
         }
 
-        if ($database === NULL) {
-            $database = strtolower(static::class);
+        @list($database, $table) = explode('\\', $table);
+        if (@$database) {
+            $table = $database . '.' . $table;
         }
 
-        @list($database, $table) = explode('\\', $database);
-        if (@$table) {
-            $database .= '.' . $table;
-        }
-
-        $sql = str_replace('_DB_', $database, $sql);
-        $sql = str_replace('_db_', $database, $sql);
+        $sql = str_replace('_DB_', $table, $sql);
+        $sql = str_replace('_db_', $table, $sql);
 
         $statement = $GLOBALS['_PICO_PDO']->prepare($sql);
         if ($valueArray != NULL) {
