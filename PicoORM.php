@@ -275,10 +275,6 @@ class PicoORM
      */
     static public function _doQuery(string $sql, array $valueArray = [], string $table = NULL): \PDOStatement
     {
-        if (@!is_object($GLOBALS['_PICO_PDO'])) {
-            throw new \Exception("_PICO_PDO global not set!");
-        }
-
         if ($table === NULL) {
             $table = strtolower(static::class);
             @list($database, $table) = explode('\\', $table);
