@@ -277,7 +277,7 @@ class PicoORM
     {
         global $PICOORM_DSN, $PICOORM_USER, $PICOORM_PASS, $PICOORM_OPTIONS;
 
-        $conn = new PDO($PICOORM_DSN, $PICOORM_USER, $PICOORM_PASS, $PICOORM_OPTIONS);
+        $conn = new \PDO($PICOORM_DSN, $PICOORM_USER, $PICOORM_PASS, $PICOORM_OPTIONS);
 
         if ($table === NULL) {
             $table = strtolower(static::class);
