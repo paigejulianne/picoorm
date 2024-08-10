@@ -275,7 +275,10 @@ class PicoORM
      */
     static public function _doQuery(string $sql, array $valueArray = [], string $table = NULL): \PDOStatement
     {
-        global $_PICO_PDO;
+        global $PICOORM_DSN, $PICOORM_USER, $PICOORM_PASS, $PICOORM_OPTIONS;
+
+        $conn = new PDO($PICOORM_DSN, $PICOORM_USER, $PICOORM_PASS, $PICOORM_OPTIONS);
+
         if ($table === NULL) {
             $table = strtolower(static::class);
             @list($database, $table) = explode('\\', $table);
@@ -284,7 +287,7 @@ class PicoORM
         $sql = str_replace('_DB_', $table, $sql);
         $sql = str_replace('_db_', $table, $sql);
 
-        $statement = $_PICO_PDO->prepare($sql);
+        $statement = $conn->prepare($sql);
         if ($valueArray != NULL) {
             if (!is_array($valueArray)) {
                 $valueArray = array($valueArray);
