@@ -54,7 +54,10 @@ include_once("PicoORM.php");
 ### Setup the PDO Connection
 
 ~~~
-$GLOBALS['_PICO_PDO'] = new PDO("mysql:host=hostname;dbname=database_name;","database_user","database_password");
+$PICOORM_DSN        ; your DSN - see the PHP PDO Driver documentation for format
+$PICOORM_USER       ; database user name
+$PICOORM_PASS       ; database user password
+$PICOORM_OPTIONS    ; see the PDO PDO Driver documentation for options
 ~~~
 
 ### Inherit the PicoORM class
