@@ -220,13 +220,13 @@ class PicoORM
 
         if (count($result) == 1) {
             if ($forceArray) {
-                return array(new $_class($result[0][$idColumn]));
+                return array(new $_class($result[0][$idColumn]), $idColumn);
             } else {
-                return new $_class($result[0][$idColumn]);
+                return new $_class($result[0][$idColumn], $idColumn);
             }
         } else {
             foreach ($result as $table_row) {
-                $returnArray[$table_row[$idColumn]] = new $_class($table_row[$idColumn]);
+                $returnArray[$table_row[$idColumn]] = new $_class($table_row[$idColumn], $idColumn);
             }
 
             return $returnArray;
