@@ -295,8 +295,8 @@ class PicoORM
 
         }
 
-        if (self::TABLE_OVERRIDE != null) {
-            $table = this::TABLE_OVERRIDE;
+        if (static::class::TABLE_OVERRIDE != null) {
+            $table = static::class::TABLE_OVERRIDE;
         }
 
         $sql = str_replace('_DB_', $table, $sql);
