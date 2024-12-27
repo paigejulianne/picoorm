@@ -34,6 +34,8 @@ class PicoORM
 
     public static int $_lastInsertId;
 
+    const TABLE_OVERRIDE = '';
+
     public function __construct(string|bool $id_value = false, string $id_column = 'id')
     {
         if (!$id_value) {
@@ -286,10 +288,14 @@ class PicoORM
 
         if ($table === NULL) {
             $table = strtolower(static::class);
-            @list($database, $table) = explode('\\', $table);
+            if (strpos($table, '\\') !== false) {
+                @list($database, $table) = explode('\\', $table);
+                $table = $database . '.' . $table;
+            }
+
         }
 
-        if (defined('TABLE_OVERRIDE')) {
+        if (self::TABLE_OVERRIDE != null) {
             $table = this::TABLE_OVERRIDE;
         }
 
