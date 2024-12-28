@@ -53,6 +53,8 @@ include_once("PicoORM.php");
 
 ### Setup the PDO Connection
 
+After including PicoPDO, you'll need to set these global variables in order for proper operation:
+
 ~~~
 $PICOORM_DSN        ; your DSN - see the PHP PDO Driver documentation for format
 $PICOORM_USER       ; database user name
