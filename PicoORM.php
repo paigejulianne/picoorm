@@ -246,7 +246,7 @@ class PicoORM
     {
         $statement = self::_doQuery($sql, $valueArray, $database);
         if ($statement->rowCount()) {
-            return $statement->fetchAll(\PDO::FETCH_BOTH);
+            return $statement->fetchAll();
         } else {
             return [];
         }
@@ -265,7 +265,7 @@ class PicoORM
     {
         $statement = self::_doQuery($sql, $valueArray, $database);
         if ($statement->rowCount()) {
-            return $statement->fetch(\PDO::FETCH_BOTH);
+            return $statement->fetch();
         } else {
             return [];
         }
