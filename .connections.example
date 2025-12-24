@@ -1,0 +1,45 @@
+# PicoORM Database Connections Configuration
+# Copy this file to .connections and update with your database credentials
+#
+# IMPORTANT: Add .connections to your .gitignore to prevent committing credentials!
+#
+# File format:
+# - Section headers [name] define connection names
+# - Each connection requires DSN, USER, and PASS
+# - OPTIONS are optional and use PDO constant syntax
+# - Lines starting with # or ; are comments
+# - Values can be quoted with " or ' (optional)
+
+# Default connection (used when no connection is specified)
+[default]
+DSN=mysql:host=localhost;dbname=myapp;charset=utf8mb4
+USER=myapp_user
+PASS=your_secure_password_here
+
+# Example: PostgreSQL connection
+# [postgres]
+# DSN=pgsql:host=localhost;dbname=myapp
+# USER=postgres_user
+# PASS=postgres_password
+
+# Example: SQLite connection
+# [sqlite]
+# DSN=sqlite:/path/to/database.sqlite
+# USER=
+# PASS=
+
+# Example: Analytics database on separate server
+# [analytics]
+# DSN=mysql:host=analytics.example.com;port=3306;dbname=analytics
+# USER=analytics_readonly
+# PASS=analytics_password
+# OPTIONS[PDO::ATTR_TIMEOUT]=5
+
+# Example: Connection with additional PDO options
+# [production]
+# DSN=mysql:host=db.example.com;dbname=production;charset=utf8mb4
+# USER=prod_user
+# PASS=prod_password
+# OPTIONS[PDO::ATTR_PERSISTENT]=true
+# OPTIONS[PDO::ATTR_TIMEOUT]=10
+# OPTIONS[PDO::MYSQL_ATTR_SSL_CA]=/path/to/ca-cert.pem

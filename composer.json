@@ -1,12 +1,17 @@
 {
   "name": "paigejulianne/picoorm",
   "type": "library",
-  "description": "PicoORM: a very lightweight ORM",
+  "description": "PicoORM: a very lightweight ORM with multi-connection support",
   "keywords": [
     "orm",
-    "lightweight"
+    "lightweight",
+    "database",
+    "pdo",
+    "mysql",
+    "sqlite",
+    "postgresql"
   ],
-  "version": "2.0.1",
+  "version": "2.0.0",
   "license": "GPL-3.0-or-later",
   "homepage": "https://github.com/paigejulianne/picoorm",
   "authors": [
@@ -20,9 +25,24 @@
     "php": ">=8.0",
     "ext-pdo": "*"
   },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0 || ^11.0"
+  },
   "autoload": {
     "files": [
       "PicoORM.php"
     ]
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/"
+    ]
+  },
+  "scripts": {
+    "test": "phpunit",
+    "test-coverage": "phpunit --coverage-html coverage"
+  },
+  "config": {
+    "sort-packages": true
   }
 }

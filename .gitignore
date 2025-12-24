@@ -1,2 +1,26 @@
+# IDE
 .idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude
+.claude/
+
+# Configuration (contains credentials)
+.connections
+
+# Testing
 test.php
+/tmp/
+.phpunit.cache/
+.phpunit.result.cache
+coverage/
+
+# Composer
+/vendor/
+composer.lock
+
+# OS files
+.DS_Store
+Thumbs.db
