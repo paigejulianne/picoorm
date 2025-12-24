@@ -44,6 +44,23 @@ class TestCustomId extends PicoORM
 }
 
 /**
+ * Test model for type validation testing
+ */
+class TestTyped extends PicoORM
+{
+    const TABLE_OVERRIDE = 'typed_table';
+}
+
+/**
+ * Test model with type validation disabled
+ */
+class TestNoValidation extends PicoORM
+{
+    const TABLE_OVERRIDE = 'typed_table';
+    const VALIDATE_TYPES = false;
+}
+
+/**
  * Helper class to set up test databases
  */
 class TestDatabaseHelper
@@ -148,6 +165,20 @@ class TestDatabaseHelper
                 user_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
                 value TEXT
+            )
+        ');
+
+        // Type validation test table
+        $pdo->exec('
+            CREATE TABLE IF NOT EXISTS typed_table (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                int_col INTEGER NOT NULL,
+                nullable_int INTEGER,
+                float_col REAL NOT NULL,
+                text_col TEXT NOT NULL,
+                nullable_text TEXT,
+                varchar_col VARCHAR(50),
+                bool_col BOOLEAN DEFAULT 0
             )
         ');
 

@@ -5,6 +5,63 @@ All notable changes to PicoORM will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-12-24
+
+### Added
+
+#### Automatic Type Validation
+
+PicoORM now validates data types against your database schema, catching type mismatches before they reach the database:
+
+- **Schema Detection**: Automatically fetches and caches table column definitions
+  - Supports MySQL, PostgreSQL, and SQLite
+  - Detects column types, nullability, max length, and primary keys
+  - In-memory caching per request for performance
+
+- **Type Validation on Set**: Values are validated immediately when setting properties
+- **Type Validation on Save**: Final validation check before writing to database
+- **String Length Validation**: Checks values against VARCHAR(n) limits
+- **NULL Constraint Validation**: Enforces NOT NULL constraints
+
+#### New Methods
+
+- **`getTableSchema($connection)`**: Get table column definitions
+- **`validateColumnValue($column, $value, $throw)`**: Manually validate a value against column type
+- **`validateAllChanges()`**: Validate all pending changes before save
+- **`clearSchemaCache($table)`**: Clear cached schema information
+
+#### New Constants
+
+- **`VALIDATE_TYPES`**: Class constant to enable/disable type validation per model (default: `true`)
+
+#### Type Coercion Rules
+
+The following type coercions are allowed:
+
+| Database Type | Accepts |
+|---------------|---------|
+| INTEGER | `int`, `bool`, numeric strings (`"123"`) |
+| FLOAT/DECIMAL | `float`, `int`, numeric strings |
+| VARCHAR/TEXT | `string`, `int`, `float`, `bool` (auto-converted) |
+| BOOLEAN | `bool`, `0`, `1`, `"0"`, `"1"` |
+
+### Usage Example
+
+```php
+// Type validation is automatic
+$user = new Users();
+$user->name = 'Alice';        // OK - string to VARCHAR
+$user->age = 25;              // OK - int to INT
+$user->age = 'twenty-five';   // TypeError: expected integer
+
+// Disable validation for a specific model
+class LegacyData extends PicoORM {
+    const VALIDATE_TYPES = false;
+}
+```
+
+---
+
 ## [2.0.0] - 2024-12-24
 
 ### Breaking Changes

@@ -2,7 +2,7 @@
 
 A lightweight, secure ORM for PHP 8.0+ that makes database operations simple without the overhead of a full-featured framework.
 
-**Version 2.0.0** | [Changelog](CHANGELOG.md) | [License: GPL-3.0](LICENSE)
+**Version 2.1.0** | [Changelog](CHANGELOG.md) | [License: GPL-3.0](LICENSE)
 
 by Paige Julianne Sullivan
 [paigejulianne.com](https://paigejulianne.com) | [GitHub](https://github.com/paigejulianne/picoorm)
@@ -615,6 +615,106 @@ PicoORM::commit('analytics');
 
 ---
 
+## Type Validation
+
+PicoORM automatically validates data types against your database schema, catching type mismatches before they reach the database.
+
+### How It Works
+
+When you set a property or save a record, PicoORM:
+1. Fetches the table schema (cached per request)
+2. Validates the value type matches the column type
+3. Throws a `TypeError` if validation fails
+
+```php
+// Assuming 'age' is an INT column in the database
+$user = new Users();
+$user->name = 'Alice';           // OK - string to VARCHAR
+$user->age = 25;                 // OK - int to INT
+$user->age = 'twenty-five';      // TypeError: expected integer, got string
+
+// String length validation
+// Assuming 'username' is VARCHAR(50)
+$user->username = str_repeat('a', 100);  // TypeError: exceeds max length of 50
+```
+
+### Disabling Validation
+
+Disable validation for a specific model by overriding the constant:
+
+```php
+class LegacyData extends PicoORM
+{
+    const VALIDATE_TYPES = false;  // Disable type checking
+}
+```
+
+### Nullable Columns
+
+Null values are only allowed for nullable columns:
+
+```php
+// If 'email' is defined as NOT NULL
+$user->email = null;  // TypeError: Column 'email' does not allow NULL values
+
+// If 'phone' allows NULL
+$user->phone = null;  // OK
+```
+
+### Type Coercion Rules
+
+PicoORM allows sensible type coercions:
+
+| Database Type | Accepts |
+|---------------|---------|
+| INTEGER | `int`, `bool`, numeric strings (`"123"`) |
+| FLOAT/DECIMAL | `float`, `int`, numeric strings |
+| VARCHAR/TEXT | `string`, `int`, `float`, `bool` (auto-converted) |
+| BOOLEAN | `bool`, `0`, `1`, `"0"`, `"1"` |
+
+### Inspecting Schema
+
+You can inspect the detected schema:
+
+```php
+$schema = Users::getTableSchema();
+
+print_r($schema);
+// [
+//     'id' => ['type' => 'int', 'php_type' => 'integer', 'nullable' => false, ...],
+//     'name' => ['type' => 'varchar', 'php_type' => 'string', 'max_length' => 255, ...],
+//     ...
+// ]
+```
+
+### Manual Validation
+
+Validate a value without setting it:
+
+```php
+$user = new Users(1);
+
+// Returns true/false without throwing
+$isValid = $user->validateColumnValue('age', 'invalid', throw: false);
+
+// Or validate all pending changes
+$user->validateAllChanges();
+```
+
+### Clearing Schema Cache
+
+If your schema changes during runtime:
+
+```php
+// Clear all cached schemas
+PicoORM::clearSchemaCache();
+
+// Clear specific table
+PicoORM::clearSchemaCache('users');
+```
+
+---
+
 ## Custom Queries
 
 For complex queries, use the low-level query methods. Use `_DB_` as a placeholder for the table name:
@@ -805,6 +905,8 @@ PicoORM works with any PDO-supported database:
 | `inTransaction($connectionName)` | Check if currently in a transaction |
 | `transaction($callback, $connectionName)` | Execute callback within a transaction |
 | `clearConnectionCache($connectionName)` | Clear cached PDO connections |
+| `getTableSchema($connectionName)` | Get table column definitions |
+| `clearSchemaCache($table)` | Clear cached schema information |
 | `_fetch($sql, $values, $table)` | Fetch single record with custom SQL |
 | `_fetchAll($sql, $values, $table)` | Fetch multiple records with custom SQL |
 | `_doQuery($sql, $values, $table)` | Execute custom SQL |
@@ -828,6 +930,8 @@ PicoORM works with any PDO-supported database:
 | `fresh()` | Return a fresh instance from the database |
 | `increment($column, $amount)` | Atomically increment a column value |
 | `decrement($column, $amount)` | Atomically decrement a column value |
+| `validateColumnValue($column, $value, $throw)` | Validate a value against column type |
+| `validateAllChanges()` | Validate all pending changes |
 
 ### Class Constants
 
@@ -835,6 +939,7 @@ PicoORM works with any PDO-supported database:
 |----------|-------------|
 | `TABLE_OVERRIDE` | Override the default table name |
 | `CONNECTION` | Specify which database connection to use |
+| `VALIDATE_TYPES` | Enable/disable type validation (default: true) |
 
 ---
 

@@ -11,7 +11,7 @@ namespace PaigeJulianne;
  * @copyright 2008-present Paige Julianne Sullivan
  * @license   GPL-3.0-or-later
  * @link      https://github.com/paigejulianne/picoorm
- * @version   2.0.0
+ * @version   2.1.0
  */
 class PicoORM
 {
@@ -90,6 +90,72 @@ class PicoORM
      * Override this constant in child classes to specify which connection to use
      */
     const CONNECTION = 'default';
+
+    /**
+     * Override this constant in child classes to disable type validation
+     */
+    const VALIDATE_TYPES = true;
+
+    /**
+     * @var array<string, array> Cached table schemas indexed by table name
+     */
+    private static array $_schemaCache = [];
+
+    /**
+     * @var array Map of database types to PHP validation types
+     */
+    private const TYPE_MAP = [
+        // Integer types
+        'int' => 'integer',
+        'integer' => 'integer',
+        'tinyint' => 'integer',
+        'smallint' => 'integer',
+        'mediumint' => 'integer',
+        'bigint' => 'integer',
+        'serial' => 'integer',
+        'bigserial' => 'integer',
+        'smallserial' => 'integer',
+        // Float types
+        'float' => 'float',
+        'double' => 'float',
+        'decimal' => 'float',
+        'numeric' => 'float',
+        'real' => 'float',
+        'money' => 'float',
+        // String types
+        'char' => 'string',
+        'varchar' => 'string',
+        'text' => 'string',
+        'tinytext' => 'string',
+        'mediumtext' => 'string',
+        'longtext' => 'string',
+        'enum' => 'string',
+        'set' => 'string',
+        'uuid' => 'string',
+        'character varying' => 'string',
+        'character' => 'string',
+        // Boolean types
+        'bool' => 'boolean',
+        'boolean' => 'boolean',
+        // Date/Time types (stored as strings)
+        'date' => 'string',
+        'datetime' => 'string',
+        'timestamp' => 'string',
+        'time' => 'string',
+        'year' => 'string',
+        'interval' => 'string',
+        // Binary types
+        'blob' => 'string',
+        'tinyblob' => 'string',
+        'mediumblob' => 'string',
+        'longblob' => 'string',
+        'binary' => 'string',
+        'varbinary' => 'string',
+        'bytea' => 'string',
+        // JSON types
+        'json' => 'string',
+        'jsonb' => 'string',
+    ];
 
     // =========================================================================
     // Connection Management
@@ -364,6 +430,375 @@ class PicoORM
     }
 
     // =========================================================================
+    // Schema Validation Methods
+    // =========================================================================
+
+    /**
+     * Get the table name for this model
+     *
+     * @return string The table name
+     */
+    protected static function getTableName(): string
+    {
+        if (static::TABLE_OVERRIDE !== null && static::TABLE_OVERRIDE !== '') {
+            return static::TABLE_OVERRIDE;
+        }
+
+        $table = strtolower(static::class);
+        if (str_contains($table, '\\')) {
+            $parts = explode('\\', $table, 2);
+            $table = $parts[0] . '.' . ($parts[1] ?? $parts[0]);
+        }
+
+        return $table;
+    }
+
+    /**
+     * Get the database driver type from the DSN
+     *
+     * @param string|null $connectionName Connection name (null for class default)
+     * @return string The driver type (mysql, pgsql, sqlite, etc.)
+     */
+    protected static function getDatabaseDriver(?string $connectionName = null): string
+    {
+        $config = static::getConnectionConfig($connectionName);
+        $dsn = $config['DSN'] ?? '';
+
+        if (preg_match('/^([a-z]+):/', $dsn, $matches)) {
+            return strtolower($matches[1]);
+        }
+
+        return 'unknown';
+    }
+
+    /**
+     * Get the table schema (column definitions)
+     *
+     * Returns an associative array of column name => column info.
+     * Column info includes: type, nullable, default, primary_key, max_length
+     *
+     * @param string|null $connectionName Connection name (null for class default)
+     * @return array<string, array> Column definitions
+     */
+    public static function getTableSchema(?string $connectionName = null): array
+    {
+        $table = static::getTableName();
+        $cacheKey = ($connectionName ?? static::CONNECTION) . '.' . $table;
+
+        if (isset(self::$_schemaCache[$cacheKey])) {
+            return self::$_schemaCache[$cacheKey];
+        }
+
+        $driver = static::getDatabaseDriver($connectionName);
+        $schema = [];
+
+        switch ($driver) {
+            case 'mysql':
+            case 'mariadb':
+                $schema = static::getMySQLSchema($table, $connectionName);
+                break;
+            case 'pgsql':
+                $schema = static::getPostgreSQLSchema($table, $connectionName);
+                break;
+            case 'sqlite':
+                $schema = static::getSQLiteSchema($table, $connectionName);
+                break;
+            default:
+                // For unknown drivers, return empty schema (no validation)
+                $schema = [];
+        }
+
+        self::$_schemaCache[$cacheKey] = $schema;
+        return $schema;
+    }
+
+    /**
+     * Get MySQL/MariaDB table schema
+     *
+     * @param string      $table          Table name
+     * @param string|null $connectionName Connection name
+     * @return array Column definitions
+     */
+    private static function getMySQLSchema(string $table, ?string $connectionName = null): array
+    {
+        $schema = [];
+
+        // Handle schema.table format
+        $tableParts = explode('.', $table);
+        $tableName = end($tableParts);
+
+        $results = static::_fetchAll(
+            "SHOW COLUMNS FROM `$tableName`",
+            [],
+            $table
+        );
+
+        foreach ($results as $row) {
+            $type = strtolower($row['Type'] ?? '');
+            $baseType = preg_replace('/\(.*\)/', '', $type);
+            $baseType = preg_replace('/\s+unsigned/', '', $baseType);
+            $baseType = trim($baseType);
+
+            // Extract max length for string types
+            $maxLength = null;
+            if (preg_match('/\((\d+)\)/', $type, $matches)) {
+                $maxLength = (int)$matches[1];
+            }
+
+            $schema[$row['Field']] = [
+                'type' => $baseType,
+                'php_type' => self::TYPE_MAP[$baseType] ?? 'string',
+                'nullable' => ($row['Null'] ?? 'NO') === 'YES',
+                'default' => $row['Default'] ?? null,
+                'primary_key' => ($row['Key'] ?? '') === 'PRI',
+                'max_length' => $maxLength,
+                'raw_type' => $type,
+            ];
+        }
+
+        return $schema;
+    }
+
+    /**
+     * Get PostgreSQL table schema
+     *
+     * @param string      $table          Table name
+     * @param string|null $connectionName Connection name
+     * @return array Column definitions
+     */
+    private static function getPostgreSQLSchema(string $table, ?string $connectionName = null): array
+    {
+        $schema = [];
+
+        // Handle schema.table format
+        $schemaName = 'public';
+        $tableName = $table;
+        if (str_contains($table, '.')) {
+            [$schemaName, $tableName] = explode('.', $table, 2);
+        }
+
+        $sql = "
+            SELECT
+                c.column_name,
+                c.data_type,
+                c.is_nullable,
+                c.column_default,
+                c.character_maximum_length,
+                CASE WHEN pk.column_name IS NOT NULL THEN true ELSE false END as is_primary
+            FROM information_schema.columns c
+            LEFT JOIN (
+                SELECT ku.column_name
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage ku
+                    ON tc.constraint_name = ku.constraint_name
+                WHERE tc.constraint_type = 'PRIMARY KEY'
+                    AND tc.table_schema = ?
+                    AND tc.table_name = ?
+            ) pk ON c.column_name = pk.column_name
+            WHERE c.table_schema = ?
+            AND c.table_name = ?
+        ";
+
+        $pdo = static::getPdo($connectionName);
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$schemaName, $tableName, $schemaName, $tableName]);
+        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        foreach ($results as $row) {
+            $type = strtolower($row['data_type'] ?? '');
+
+            $schema[$row['column_name']] = [
+                'type' => $type,
+                'php_type' => self::TYPE_MAP[$type] ?? 'string',
+                'nullable' => ($row['is_nullable'] ?? 'NO') === 'YES',
+                'default' => $row['column_default'] ?? null,
+                'primary_key' => (bool)$row['is_primary'],
+                'max_length' => $row['character_maximum_length'] ? (int)$row['character_maximum_length'] : null,
+                'raw_type' => $type,
+            ];
+        }
+
+        return $schema;
+    }
+
+    /**
+     * Get SQLite table schema
+     *
+     * @param string      $table          Table name
+     * @param string|null $connectionName Connection name
+     * @return array Column definitions
+     */
+    private static function getSQLiteSchema(string $table, ?string $connectionName = null): array
+    {
+        $schema = [];
+
+        // Handle schema.table format for SQLite
+        $tableParts = explode('.', $table);
+        $tableName = end($tableParts);
+
+        $pdo = static::getPdo($connectionName);
+        $stmt = $pdo->prepare("PRAGMA table_info(`$tableName`)");
+        $stmt->execute();
+        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        foreach ($results as $row) {
+            $type = strtolower($row['type'] ?? 'text');
+            $baseType = preg_replace('/\(.*\)/', '', $type);
+            $baseType = trim($baseType);
+
+            // SQLite type affinity mapping
+            $phpType = 'string';
+            if (in_array($baseType, ['integer', 'int', 'tinyint', 'smallint', 'mediumint', 'bigint'])) {
+                $phpType = 'integer';
+            } elseif (in_array($baseType, ['real', 'double', 'float', 'numeric', 'decimal'])) {
+                $phpType = 'float';
+            } elseif ($baseType === 'boolean' || $baseType === 'bool') {
+                $phpType = 'boolean';
+            }
+
+            // Extract max length
+            $maxLength = null;
+            if (preg_match('/\((\d+)\)/', $type, $matches)) {
+                $maxLength = (int)$matches[1];
+            }
+
+            $schema[$row['name']] = [
+                'type' => $baseType ?: 'text',
+                'php_type' => $phpType,
+                'nullable' => ((int)($row['notnull'] ?? 0)) === 0,
+                'default' => $row['dflt_value'] ?? null,
+                'primary_key' => ((int)($row['pk'] ?? 0)) === 1,
+                'max_length' => $maxLength,
+                'raw_type' => $type,
+            ];
+        }
+
+        return $schema;
+    }
+
+    /**
+     * Validate a value against the column's expected type
+     *
+     * @param string $column The column name
+     * @param mixed  $value  The value to validate
+     * @param bool   $throw  Whether to throw exception on failure (default: true)
+     *
+     * @return bool True if valid, false otherwise
+     * @throws \TypeError If value type doesn't match column type and $throw is true
+     */
+    public function validateColumnValue(string $column, mixed $value, bool $throw = true): bool
+    {
+        // Skip validation if disabled for this class
+        if (!static::VALIDATE_TYPES) {
+            return true;
+        }
+
+        // Skip validation for internal properties
+        if (str_starts_with($column, '_')) {
+            return true;
+        }
+
+        // Null values are allowed for nullable columns or always allowed if no schema
+        $schema = static::getTableSchema();
+
+        // If we can't get schema info, skip validation
+        if (empty($schema) || !isset($schema[$column])) {
+            return true;
+        }
+
+        $columnInfo = $schema[$column];
+
+        // Allow null for nullable columns
+        if ($value === null) {
+            if ($columnInfo['nullable']) {
+                return true;
+            }
+            if ($throw) {
+                throw new \TypeError(
+                    "Column '$column' does not allow NULL values"
+                );
+            }
+            return false;
+        }
+
+        $expectedType = $columnInfo['php_type'];
+        $actualType = gettype($value);
+
+        // Type coercion rules
+        $valid = match ($expectedType) {
+            'integer' => is_int($value) || is_bool($value) || (is_string($value) && ctype_digit(ltrim($value, '-'))),
+            'float' => is_float($value) || is_int($value) || (is_string($value) && is_numeric($value)),
+            'string' => is_string($value) || is_int($value) || is_float($value) || is_bool($value),
+            'boolean' => is_bool($value) || $value === 0 || $value === 1 || $value === '0' || $value === '1',
+            default => true,
+        };
+
+        // Check max length for strings
+        if ($valid && $expectedType === 'string' && $columnInfo['max_length'] !== null) {
+            $stringValue = is_string($value) ? $value : (string)$value;
+            if (strlen($stringValue) > $columnInfo['max_length']) {
+                if ($throw) {
+                    throw new \TypeError(
+                        "Value for column '$column' exceeds maximum length of {$columnInfo['max_length']} characters (got " . strlen($stringValue) . ")"
+                    );
+                }
+                return false;
+            }
+        }
+
+        if (!$valid && $throw) {
+            throw new \TypeError(
+                "Invalid type for column '$column': expected {$expectedType}, got {$actualType}. " .
+                "Database column type is '{$columnInfo['raw_type']}'"
+            );
+        }
+
+        return $valid;
+    }
+
+    /**
+     * Validate all pending changes before saving
+     *
+     * @return bool True if all values are valid
+     * @throws \TypeError If any value type doesn't match its column type
+     */
+    public function validateAllChanges(): bool
+    {
+        if (!static::VALIDATE_TYPES) {
+            return true;
+        }
+
+        foreach ($this->_taintedItems as $column => $_) {
+            if (isset($this->properties[$column])) {
+                $this->validateColumnValue($column, $this->properties[$column]);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Clear the schema cache
+     *
+     * Useful for testing or when schema changes during runtime.
+     *
+     * @param string|null $table Specific table to clear, or null for all
+     * @return void
+     */
+    public static function clearSchemaCache(?string $table = null): void
+    {
+        if ($table !== null) {
+            foreach (self::$_schemaCache as $key => $value) {
+                if (str_ends_with($key, '.' . $table)) {
+                    unset(self::$_schemaCache[$key]);
+                }
+            }
+        } else {
+            self::$_schemaCache = [];
+        }
+    }
+
+    // =========================================================================
     // Constructor and Core Methods
     // =========================================================================
 
@@ -471,6 +906,9 @@ class PicoORM
      */
     public function writeChanges(): void
     {
+        // Validate all changes before saving
+        $this->validateAllChanges();
+
         $parts = [];
         $columns = [];
         $values = [];
@@ -537,6 +975,11 @@ class PicoORM
      */
     public function __set(string $prop, string|array|int|float|bool|null $value): void
     {
+        // Validate type before setting (if validation is enabled)
+        if ($prop[0] !== '_' && static::VALIDATE_TYPES) {
+            $this->validateColumnValue($prop, $value);
+        }
+
         if ($prop[0] !== '_') {
             $this->_taintedItems[$prop] = $prop;
         }
