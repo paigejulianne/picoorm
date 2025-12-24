@@ -2,7 +2,7 @@
 
 A lightweight, secure ORM for PHP 8.0+ that makes database operations simple without the overhead of a full-featured framework.
 
-**Version 2.1.0** | [Changelog](CHANGELOG.md) | [License: GPL-3.0](LICENSE)
+**Version 2.1.1** | [Changelog](CHANGELOG.md) | [License: GPL-3.0](LICENSE)
 
 by Paige Julianne Sullivan
 [paigejulianne.com](https://paigejulianne.com) | [GitHub](https://github.com/paigejulianne/picoorm)

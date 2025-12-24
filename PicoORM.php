@@ -11,7 +11,7 @@ namespace PaigeJulianne;
  * @copyright 2008-present Paige Julianne Sullivan
  * @license   GPL-3.0-or-later
  * @link      https://github.com/paigejulianne/picoorm
- * @version   2.1.0
+ * @version   2.1.1
  */
 class PicoORM
 {
